@@ -1,18 +1,29 @@
 import React from 'react';
 import { LinePath } from '@visx/shape';
-import { scaleLinear } from '@visx/scale';
-import { LegendOrdinal } from '@visx/legend';
-import { scaleOrdinal } from '@visx/scale';
+import { scaleLinear, scaleOrdinal } from '@visx/scale';
 import { AxisBottom, AxisLeft } from '@visx/axis';
-import { extent, max, min } from 'd3-array';
+import { extent, max, min, bisector } from 'd3-array';
 import { Group } from '@visx/group';
-import { DataSet } from '../../types/Types';
+import { LegendOrdinal } from '@visx/legend';
+import { useTooltip, TooltipWithBounds, defaultStyles } from '@visx/tooltip';
+import { localPoint } from '@visx/event';
+import { DataSet, DataPoint } from '../../types/Types';
 
 type MultiLineGraphProps = {
   datasets: DataSet[];
   width: number;
   height: number;
   margin?: { top: number; right: number; bottom: number; left: number };
+};
+
+type NearestPoint = {
+  dataset: string;
+  period: number;
+  value: number;
+  color: string;
+  scaledX: number;
+  scaledY: number;
+  distance: number;
 };
 
 const defaultMargin = { top: 20, right: 30, bottom: 40, left: 50 };
@@ -26,19 +37,26 @@ const MultiLineGraph: React.FC<MultiLineGraphProps> = ({
   const innerWidth = width - margin.left - margin.right;
   const innerHeight = height - margin.top - margin.bottom;
 
-  // Compute global x extent (assumes all datasets share x domain)
+  const {
+    showTooltip,
+    hideTooltip,
+    tooltipData,
+    tooltipLeft,
+    tooltipTop,
+  } = useTooltip<NearestPoint[]>();
+
+  // Prepare data domains
   const allX = datasets.flatMap((d) => d.data.map((p) => p.period));
   const xDomain = extent(allX) as [number, number];
   const [xMin, xMax] = xDomain;
   const xTicks = [];
-  for (let i = Math.ceil(xMin); i <= Math.floor(xMax); i += 1) {
+  for (let i = Math.ceil(xMin); i <= Math.floor(xMax); i += 12) {
     xTicks.push(i);
-}
+  }
 
-  // Compute global y max
   const allY = datasets.flatMap((d) => d.data.map((p) => p.value));
-  const yMaxValue = max(allY) || 1;
-  const yMinValue = min(allY) || 1;
+  const yMaxValue = max(allY) ?? 1;
+  const yMinValue = min(allY) ?? 0;
 
   const xScale = scaleLinear({
     domain: xDomain,
@@ -51,10 +69,58 @@ const MultiLineGraph: React.FC<MultiLineGraphProps> = ({
   });
 
   const colorScale = scaleOrdinal({
-  domain: datasets.map(d => d.label),
-  range: datasets.map(d => d.color),
-});
+    domain: datasets.map((d) => d.label),
+    range: datasets.map((d) => d.color),
+  });
 
+  const bisectPeriod = bisector<DataPoint, number>((d) => d.period).left;
+
+  const handleMouseMove = (event: React.MouseEvent<SVGRectElement>) => {
+    const point = localPoint(event.currentTarget, event);
+    if (!point) return;
+
+    const x0 = xScale.invert(point.x - margin.left);
+    const nearestPoints: NearestPoint[] = [];
+
+    for (const dataset of datasets) {
+      const idx = bisectPeriod(dataset.data, x0);
+      const d0 = dataset.data[idx - 1];
+      const d1 = dataset.data[idx];
+
+      const d =
+        !d0 || !d1
+          ? d0 || d1
+          : x0 - d0.period > d1.period - x0
+          ? d1
+          : d0;
+
+      if (!d) continue;
+
+      const dx = xScale(d.period);
+      const dy = yScale(d.value);
+
+      nearestPoints.push({
+        dataset: dataset.label,
+        value: d.value,
+        period: d.period,
+        color: dataset.color,
+        scaledX: dx,
+        scaledY: dy,
+        distance: Math.abs(point.x - (dx + margin.left)),
+      });
+    }
+
+    if (nearestPoints.length > 0) {
+      // Position tooltip horizontally near cursor, vertically fixed a bit above top margin
+      showTooltip({
+        tooltipLeft: point.x,
+        tooltipTop: point.y + margin.top,
+        tooltipData: nearestPoints,
+      });
+    } else {
+      hideTooltip();
+    }
+  };
 
   return (
     <>
@@ -74,8 +140,33 @@ const MultiLineGraph: React.FC<MultiLineGraphProps> = ({
           <AxisLeft scale={yScale} />
         </Group>
 
-        {/* Legend centered at top */}
-        <Group top={margin.top} left={width / 2 - 60}>
+        {/* Transparent overlay for mouse tracking */}
+        <rect
+          x={margin.left}
+          y={margin.top}
+          width={innerWidth}
+          height={innerHeight}
+          fill="transparent"
+          onMouseMove={handleMouseMove}
+          onMouseLeave={hideTooltip}
+        />
+
+        {/* Circles for all hovered points */}
+        {tooltipData?.map((point, i) => (
+          <circle
+            key={`hover-circle-${i}`}
+            cx={point.scaledX + margin.left}
+            cy={point.scaledY + margin.top}
+            r={5}
+            fill={point.color}
+            stroke="#fff"
+            strokeWidth={2}
+            pointerEvents="none"
+          />
+        ))}
+
+        {/* Legend in top center */}
+        <Group top={margin.top} left={width / 2 - (datasets.length * 100) / 2}>
           <LegendOrdinal scale={colorScale} labelFormat={(label) => label}>
             {(labels) => (
               <Group>
@@ -92,6 +183,23 @@ const MultiLineGraph: React.FC<MultiLineGraphProps> = ({
           </LegendOrdinal>
         </Group>
       </svg>
+
+      {/* Tooltip UI */}
+      {tooltipData && (
+        <TooltipWithBounds
+          top={tooltipTop}
+          left={tooltipLeft}
+          style={{ ...defaultStyles, backgroundColor: 'white', color: 'black' }}
+        >
+          {tooltipData.map((point, i) => (
+            <div key={`tooltip-point-${i}`} style={{ marginBottom: 4 }}>
+              <strong style={{ color: point.color }}>{point.dataset}</strong><br />
+              Period: {point.period}<br />
+              Value: {point.value.toFixed(2)}
+            </div>
+          ))}
+        </TooltipWithBounds>
+      )}
     </>
   );
 };

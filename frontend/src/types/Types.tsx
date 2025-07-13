@@ -1,4 +1,4 @@
-export type Point = {
+export type DataPoint = {
   period: number;
   value: number;
 };
@@ -6,5 +6,5 @@ export type Point = {
 export type DataSet = {
   label: string;
   color: string;
-  data: Point[];
+  data: DataPoint[];
 };

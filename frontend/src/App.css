@@ -36,3 +36,12 @@
     transform: rotate(360deg);
   }
 }
+
+.InputsContainer {
+  display: flex;
+  margin: 20px;
+}
+
+.InputsContainer > div {
+  margin: 20px;
+}
