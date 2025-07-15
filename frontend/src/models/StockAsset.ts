@@ -4,12 +4,10 @@ import { Asset } from "./Asset";
 interface StockAssetProps {
     name: string | null;
     color: string | null;
-    purchasePrice: number;
     deposit: number;
-    interestRatePa: number;       // Annual interest rate (%)
     growthRatePa: number;         // Annual property growth rate (%)
-    offsetAccountBalance: number; // Starting offset balance
     years: number;                // Mortgage duration
+    brokerageCost: number;
 }
 
 export class StockAsset implements Asset {
@@ -19,6 +17,7 @@ export class StockAsset implements Asset {
     growthRatePa: number;
     years: number;
     months: number;
+    brokerageCost: number;
 
     constructor(props: StockAssetProps) {
         this.name = props.name || "Stock";
@@ -26,6 +25,7 @@ export class StockAsset implements Asset {
         this.initialValue = props.deposit;
         this.growthRatePa = props.growthRatePa;
         this.years = props.years;
+        this.brokerageCost = props.brokerageCost
         this.months = this.years * 12;
     }
 

@@ -8,9 +8,9 @@ import { StockAsset } from './models/StockAsset';
 
 // Global
 let years = 30;
-let deposit = 17500; // Flat, TODO - also need to allow percentage
+let deposit = 100000; // $, TODO - also need to allow percentage
 let startingRent = 1300; // $ per month
-let rentGrowthRate = 3; // % per year
+let rentGrowthRate = 3.0; // % per year
 
 // Stock
 let stockGrowthRatePa = 8.0; // %
@@ -19,12 +19,10 @@ let brokerageCost = 3; // Dollars
 const stock = new StockAsset({
   name: "ETFs",
   color: '#2196F3',
-  purchasePrice: 0, // Not used for stocks
   deposit: deposit,
-  interestRatePa: 0, // Not used for stocks
   growthRatePa: stockGrowthRatePa,
-  offsetAccountBalance: 0, // Not used for stocks
   years: years,
+  brokerageCost: brokerageCost
 });
 
 // House
