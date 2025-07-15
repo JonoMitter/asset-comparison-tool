@@ -7,10 +7,10 @@ import { Group } from '@visx/group';
 import { LegendOrdinal } from '@visx/legend';
 import { useTooltip, TooltipWithBounds, defaultStyles } from '@visx/tooltip';
 import { localPoint } from '@visx/event';
-import { DataSet, DataPoint } from '../../types/Types';
+import { GraphDataSet, GraphDataPoint } from '../../types/Types';
 
 type MultiLineGraphProps = {
-  datasets: DataSet[];
+  datasets: GraphDataSet[];
   width: number;
   height: number;
   margin?: { top: number; right: number; bottom: number; left: number };
@@ -73,7 +73,7 @@ const MultiLineGraph: React.FC<MultiLineGraphProps> = ({
     range: datasets.map((d) => d.color),
   });
 
-  const bisectPeriod = bisector<DataPoint, number>((d) => d.period).left;
+  const bisectPeriod = bisector<GraphDataPoint, number>((d) => d.period).left;
 
   const handleMouseMove = (event: React.MouseEvent<SVGRectElement>) => {
     const point = localPoint(event.currentTarget, event);

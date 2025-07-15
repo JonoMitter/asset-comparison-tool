@@ -1,10 +1,10 @@
 import React from 'react';
 import './App.css';
 import MultiLineGraph from './components/graph/MultiLineGraph';
-import { DataSet } from './types/Types';
-import { StockAsset } from './components/asset/StockAsset';
-import { HouseAsset } from './components/asset/HouseAsset';
+import { GraphDataSet } from './types/Types';
 import DataTable from './components/graph/DataTable';
+import { HouseAsset } from './models/HouseAsset';
+import { StockAsset } from './models/StockAsset';
 
 // Global
 let years = 30;
@@ -13,17 +13,24 @@ let startingRent = 1300; // $ per month
 let rentGrowthRate = 3; // % per year
 
 // Stock
-const stock = new StockAsset();
-let stockGrowthRate = 8;
-let brokerageCost = 3; // flat fixed amount
+let stockGrowthRatePa = 8.0; // %
+let brokerageCost = 3; // Dollars
+
+const stock = new StockAsset({
+  name: "ETFs",
+  color: '#2196F3',
+  purchasePrice: 0, // Not used for stocks
+  deposit: deposit,
+  interestRatePa: 0, // Not used for stocks
+  growthRatePa: stockGrowthRatePa,
+  offsetAccountBalance: 0, // Not used for stocks
+  years: years,
+});
 
 // House
-const house = new HouseAsset();
-let houseGrowthRate = 3;
+let houseGrowthRatePa = 3.0;
 let purchasePrice = 350000;
-
-let interestRate = 5;
-
+let interestRatePa = 5.0;
 let bodyCorporate = 0;
 let maintenance = 0;
 let homeInsurance = 0;
@@ -32,28 +39,25 @@ let waterRates = 0;
 let landTax = 0;
 let costsInflation = 3;
 let ownershipCosts = bodyCorporate + maintenance + homeInsurance + councilRates + waterRates + landTax;
+let offsetAccountBalance = 0;
 
+const house = new HouseAsset({
+  name: "PPOR",
+  color: '#4CAF50',
+  purchasePrice: purchasePrice,
+  deposit: deposit,
+  interestRatePa: interestRatePa,
+  growthRatePa: houseGrowthRatePa,
+  offsetAccountBalance: offsetAccountBalance,
+  years: years
+});
 
-const datasets: DataSet[] = [
-  stock.calculate({
-    name: "ETFs",
-    color: '#2196F3',
-    deposit: deposit,
-    years: years,
-    growthRatePa: stockGrowthRate,
-  }),
-  house.calculate({
-    name: "PPOR",
-    color: '#ff6347',
-    deposit: deposit,
-    years: years,
-    growthRatePa: houseGrowthRate,
-    purchasePrice: purchasePrice,
-    interestRate: interestRate,
-    ownershipCosts: ownershipCosts,
-    ownershipCostsInflation: costsInflation,
-  }),
-];
+let assets = [stock, house];
+
+let datasets: GraphDataSet[] = [];
+for (let asset of assets) {
+  datasets.push(asset.getGraphData());
+}
 
 function App() {
   return (
@@ -71,14 +75,14 @@ function App() {
         <div>
           <h2>Stock Inputs</h2>
           <div>
-            stockGrowthRate: {stockGrowthRate}% p.a. <br />
+            stockGrowthRate: {stockGrowthRatePa}% p.a. <br />
             brokerageCost: ${brokerageCost}
           </div>
         </div>
         <div>
           <h2>PPOR Inputs</h2>
           <div>
-            houseGrowthRate = {houseGrowthRate}% p.a. <br />
+            houseGrowthRate: {houseGrowthRatePa}% p.a. <br />
             purchasePrice: ${purchasePrice} <br />
             bodyCorporate: ${bodyCorporate} <br />
             maintenance: ${maintenance} <br />

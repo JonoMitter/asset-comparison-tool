@@ -1,8 +1,8 @@
 import React from 'react';
-import { DataSet } from '../../types/Types';
+import { GraphDataSet } from '../../types/Types';
 
 type TableProps = {
-    datasets: DataSet[];
+    datasets: GraphDataSet[];
 };
 
 const DataTable: React.FC<TableProps> = ({ datasets }) => {
