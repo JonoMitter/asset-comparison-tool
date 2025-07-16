@@ -1,10 +1,12 @@
 import React from 'react';
 import './App.css';
 import MultiLineGraph from './components/graph/MultiLineGraph';
-import { GraphDataSet } from './types/Types';
 import DataTable from './components/graph/DataTable';
-import { HouseAsset } from './models/HouseAsset';
-import { StockAsset } from './models/StockAsset';
+import { HouseAsset } from './models/assets/HouseAsset';
+import { StockAsset } from './models/assets/StockAsset';
+import { GraphDataSet } from './models/datasets/GraphDataSet';
+import { TableDataSet } from './models/datasets/TableDataSet';
+import { PeriodData } from './models/datasets/PeriodData';
 
 // Global
 let years = 30;
@@ -14,16 +16,7 @@ let rentGrowthRate = 3.0; // % per year
 
 // Stock
 let stockGrowthRatePa = 8.0; // %
-let brokerageCost = 3; // Dollars
-
-const stock = new StockAsset({
-  name: "ETFs",
-  color: '#2196F3',
-  deposit: deposit,
-  growthRatePa: stockGrowthRatePa,
-  years: years,
-  brokerageCost: brokerageCost
-});
+let brokerageCost = 2; // Dollars
 
 // House
 let houseGrowthRatePa = 3.0;
@@ -39,6 +32,15 @@ let costsInflation = 3;
 let ownershipCosts = bodyCorporate + maintenance + homeInsurance + councilRates + waterRates + landTax;
 let offsetAccountBalance = 0;
 
+const stock = new StockAsset({
+  name: "ETFs",
+  color: '#2196F3',
+  deposit: deposit,
+  growthRatePa: stockGrowthRatePa,
+  years: years,
+  brokerageCost: brokerageCost
+});
+
 const house = new HouseAsset({
   name: "PPOR",
   color: '#4CAF50',
@@ -52,10 +54,17 @@ const house = new HouseAsset({
 
 let assets = [stock, house];
 
-let datasets: GraphDataSet[] = [];
+let graphData: GraphDataSet[] = [];
 for (let asset of assets) {
-  datasets.push(asset.getGraphData());
+  graphData.push(asset.getGraphData());
 }
+
+let tableData: PeriodData[] = [];
+// for (let asset of assets) {
+//   tableData= asset.getTableData());
+// }
+
+tableData= house.getTableData();
 
 function App() {
   return (
@@ -94,9 +103,11 @@ function App() {
         </div>
       </div>
       <div className="App">
-        <h1>Multi Dataset Line Graph</h1>
-        <MultiLineGraph datasets={datasets} width={600} height={400} />
-        <DataTable datasets={datasets} />
+        <h1>Asset Value Over Time</h1>
+        <MultiLineGraph datasets={graphData} width={600} height={400} />
+
+        <h1>Data Table</h1>
+        <DataTable data={tableData} />
       </div>
     </div>
   );

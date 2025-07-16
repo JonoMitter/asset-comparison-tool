@@ -7,7 +7,8 @@ import { Group } from '@visx/group';
 import { LegendOrdinal } from '@visx/legend';
 import { useTooltip, TooltipWithBounds, defaultStyles } from '@visx/tooltip';
 import { localPoint } from '@visx/event';
-import { GraphDataSet, GraphDataPoint } from '../../types/Types';
+import { GraphDataSet } from '../../models/datasets/GraphDataSet';
+import { GraphDataPoint } from '../../models/datasets/GraphDataPoint';
 
 type MultiLineGraphProps = {
   datasets: GraphDataSet[];

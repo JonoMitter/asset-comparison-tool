@@ -1,4 +1,6 @@
-import { GraphDataSet, TableDataSet } from "../types/Types";
+import { GraphDataSet } from "../datasets/GraphDataSet";
+import { PeriodData } from "../datasets/PeriodData";
+import { TableDataSet } from "../datasets/TableDataSet";
 import { Asset } from "./Asset";
 
 interface StockAssetProps {
@@ -56,11 +58,7 @@ export class StockAsset implements Asset {
     }
 
     // TODO
-    getTableData(): TableDataSet {
-        return {
-            label: this.name,
-            color: this.color,
-            data: []
-        };
+    getTableData(): PeriodData[] {
+        return [];
     }
 }
