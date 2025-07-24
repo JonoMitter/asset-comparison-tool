@@ -15,7 +15,7 @@ interface StockAssetProps {
 export class StockAsset implements Asset {
     name: string;
     color: string;
-    initialValue: number;
+    deposit: number;
     growthRatePa: number;
     years: number;
     months: number;
@@ -24,7 +24,7 @@ export class StockAsset implements Asset {
     constructor(props: StockAssetProps) {
         this.name = props.name || "Stock";
         this.color = props.color || '#dd4477';
-        this.initialValue = props.deposit;
+        this.deposit = props.deposit;
         this.growthRatePa = props.growthRatePa;
         this.years = props.years;
         this.brokerageCost = props.brokerageCost
@@ -38,7 +38,7 @@ export class StockAsset implements Asset {
         let growthRatePm = growthRateDecimal / 12;
 
         let months = this.years * 12;
-        let value = this.initialValue;
+        let value = this.deposit;
 
         for (let month = 0; month <= months; month++) {
             if (month === 0) {

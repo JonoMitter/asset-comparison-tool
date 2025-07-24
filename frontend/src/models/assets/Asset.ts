@@ -7,7 +7,7 @@ export interface Asset {
     name: string;
     color: string;
 
-    initialValue: number;
+    deposit: number;
     growthRatePa: number;
     years: number;
 

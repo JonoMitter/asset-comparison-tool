@@ -27,10 +27,10 @@ export class HouseAsset implements Asset {
   name: string;
   color: string;
   purchasePrice: number;
-  initialValue: number;
+  deposit: number;
   interestRatePa: number;
   growthRatePa: number;
-  offsetAccountBalance: number;
+  // offsetAccountBalance: number;
   years: number;
 
   interestRateMonthly: number;
@@ -49,19 +49,19 @@ export class HouseAsset implements Asset {
     this.name = props.name || "House";
     this.color = props.color || '#2069c8ff';
     this.purchasePrice = props.purchasePrice;
-    this.initialValue = props.deposit;
+    this.deposit = props.deposit;
     this.interestRatePa = props.interestRatePa;
     this.growthRatePa = props.growthRatePa;
-    this.offsetAccountBalance = props.offsetAccountBalance;
+    // this.offsetAccountBalance = props.offsetAccountBalance;
     this.years = props.years;
 
     this.interestRateMonthly = this.interestRatePa / 100 / 12;
     this.growthRateMonthly = Math.pow(1 + this.growthRatePa / 100, 1 / 12);
-    this.residualMortgage = this.purchasePrice - this.initialValue;
+    this.residualMortgage = this.purchasePrice - this.deposit;
     this.months = this.years * 12;
 
     this.mortgagePayment = this.calculateMonthlyPayment();
-    this.propertyValueOwned = this.initialValue;
+    this.propertyValueOwned = this.deposit;
     this.assetValue = this.purchasePrice;
 
     // Calculate all period data at construction
@@ -91,14 +91,14 @@ export class HouseAsset implements Asset {
           interest: 0,
           totalAssetValue: this.purchasePrice,
           principalPaid: 0,
-          propertyValueOwned: this.initialValue
+          propertyValueOwned: this.deposit
         });
       } else {
         // Calculate current property value with growth
         currentPropertyValue = currentPropertyValue * this.growthRateMonthly;
         
         // Calculate interest and principal payments
-        const effectiveBalance = Math.max(0, remainingBalance - this.offsetAccountBalance);
+        const effectiveBalance = remainingBalance;
         const interestPayment = effectiveBalance * this.interestRateMonthly;
         const principalPayment = remainingBalance > 0 ? this.mortgagePayment - interestPayment : 0;
         
